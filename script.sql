@@ -1,6 +1,6 @@
 CREATE TABLE ITEM(
 	ITEM_ID serial PRIMARY KEY,
-	ITEM_NAME char(20) NOT NULL,
+	ITEM_NAME char(20) NOT NULL
 );
 
 CREATE TABLE ITEM_DESCRITION(
@@ -17,14 +17,15 @@ CREATE TABLE PERSON(
 	PROFESSION_NAME char(50) NOT NULL,
 	ITEM_ID integer UNIQUE REFERENCES ITEM ON DELETE SET NULL
 );
-CREATE TABLE HAVE(
+CREATE TABLE OWN(
 	PERSON_ID integer REFERENCES PERSON,
-	ITEM_ID integer REFERENCES ITEM
+	ITEM_ID integer REFERENCES ITEM UNIQUE,
+	TIME timestamp
 );	
 
 CREATE TABLE BODY_PART(
 	BODY_PART_ID serial PRIMARY KEY,
-	PART_NAME char(25) NOT NULL
+	PART_NAME char(25) NOT NULL,
 	PERSON_ID integer REFERENCES PERSON
 );
 
@@ -42,28 +43,30 @@ CREATE TABLE FLASHLIGHT(
 CREATE TABLE SHIP(
 	SHIP_ID serial PRIMARY KEY,
 	SHIP_NAME char(50),
-	SHIP_TYPE char(25),
+	SHIP_TYPE char(25)
 );
 
-CREATE TABLE LOCATE(
+CREATE TABLE LOCATION(
 	SHIP_ID integer REFERENCES SHIP,
-	FLASHLIGHT_ID integer REFERENCES FLASHLIGHT
+	FLASHLIGHT_ID integer REFERENCES FLASHLIGHT UNIQUE
 );
 
 CREATE TABLE PORT(
 	PORT_ID serial PRIMARY KEY,
 	PORT_NAME char(25) NOT NULL,
-	SITY_NAME char(25) NOT NULL
+	CITY_NAME char(25) NOT NULL
 );
 
-CREATE TABLE VISITOR(
+CREATE TABLE VISITOR_LIST(
 	PERSON_ID integer REFERENCES PERSON,
-	PORT_ID integer REFERENCES PORT
+	PORT_ID integer REFERENCES PORT,
+	TIME timestamp
 );
 
 CREATE TABLE SHIP_IN_PORT(
 	SHIP_ID integer REFERENCES SHIP,
-	PORT_ID integer REFERENCES PORT
+	PORT_ID integer REFERENCES PORT,
+	TIME timestamp
 );
 
 CREATE TABLE WACHED_SHIP (
@@ -85,59 +88,75 @@ CREATE TABLE LIGHTS_ON_TIME (
 	PRIMARY KEY (FLASHLIGHT_ID, TIME_NAME)
 );
 
-INSERT INTO ITEM (ITEM_NAME, DESCRIPTION)
+INSERT INTO ITEM (ITEM_NAME)
 VALUES
-	('binoculars', 'item for super vision'),
-	('book', 'book with pictures'),
-	('gun', 'personnel gun'),
-	('map', 'map of this place');
+	('binoculars'),
+	('book'),
+	('gun'),
+	('map');
+INSERT INTO ITEM_DESCRITION(ITEM_ID, CREATION_DATE, DESCRIPTION)
+VALUES
+	(1, '2016-11-23', 'item for super vision'),
+	(2, '2015-10-23', 'book with pictures');
 
-INSERT INTO BODY_PART(PART_NAME)
+INSERT INTO PERSON(PERSON_NAME, PERSON_AGE, PROFESSION_NAME)
 VALUES
-	('hand'),
-	('head'),
-	('leg'),
-	('elbow');
+	('Artem', 18, 'student'),
+	('Grant', 43, 'archaeologist');
 
-INSERT INTO PERSON(PERSON_NAME, PERSON_AGE, PROFESSION_NAME, ITEM_ID)
+INSERT INTO OWN(PERSON_ID, ITEM_ID, TIME)
 VALUES
-	('Artem', 22, 'student', NULL),
-	('Grant', 43, 'archaeologist', 2);
+	(2, 1, '2023-03-02 18:13:44+01'),
+	(2, 3, '2022-03-02 12:13:44+01'),
+	(2, 4, '2021-03-02 13:13:44+01'),
+	(1, 2, '2020-03-02 10:13:44+01');
 
-INSERT INTO BODY_PART_ACTION(PERSON_ID, BODY_PART_ID, ACTION_NAME)
+INSERT INTO BODY_PART(PART_NAME, PERSON_ID)
 VALUES
-	(2, 4, 'push out'),
-	(1, 1, 'shake'),
-	(2, 3, 'tap');
+	('hand', 1),
+	('head', 1),
+	('leg', 2),
+	('elbow', 2);
+
+INSERT INTO BODY_PART_ACTION(BODY_PART_ID, ACTION_NAME, ACTION_TIME)
+VALUES
+	(3, 'push out', '2023-03-02 11:13:44+01'),
+	(2, 'tap', '2023-03-01 12:04:54+01');
 
 INSERT INTO FLASHLIGHT(LAMP_TYPE)
 VALUES
 	('LED'),
-	('LED'),
-	('LED'),
-	('incandescent lamp'),
-	('incandescent lamp'),
 	('incandescent lamp');
 
-INSERT INTO SHIP(SHIP_NAME, SHIP_TYPE, FLASHLIGHT_ID)
+INSERT INTO SHIP(SHIP_NAME, SHIP_TYPE)
 VALUES
-	('Titanic', 'passenger ship', 1),
-	('Titanic', 'passenger ship', 4),
-	('black Pearl', 'Pirates ship', 5),
-	('black Pearl', 'Pirates ship', 6),
-	('Gilda', 'vessel', 2),
-	('Gilda', 'vessel', 3);
+	('Titanic', 'passenger ship'),
+	('black Pearl', 'Pirates ship'),
+	('Gilda', 'vessel');
 
-INSERT INTO PORT (PERSON_ID, SHIP_ID, PORT_NAME, SITY_NAME)
+INSERT INTO LOCATION(SHIP_ID, FLASHLIGHT_ID)
 VALUES
-	(2, 1, 'sevkabel', 'Saint Petersburg'),
-	(2, 5, 'sevkabel', 'Saint Petersburg'),
-	(1, 3, 'Samara river port', 'Samara');
+	(3, 1),
+	(3, 2);	
+
+INSERT INTO PORT (PORT_NAME, CITY_NAME)
+VALUES
+	('Sevkabel', 'Saint Petersburg'),
+	('Samara river port', 'Samara');
+
+INSERT INTO VISITOR_LIST (PERSON_ID, PORT_ID, TIME)
+VALUES
+	(2, 1, '2023-01-02 11:13:44+01'),
+	(1, 2, '2023-02-02 11:13:44+01');
 	
+INSERT INTO SHIP_IN_PORT (PORT_ID, SHIP_ID, TIME)
+VALUES
+	(1, 2, '2023-03-02 11:13:44+01');
+
 INSERT INTO WACHED_SHIP (PERSON_ID, SHIP_ID)
 VALUES
-	(1, 3),
-	(2, 5);
+	(1, 2),
+	(2, 3);
 
 INSERT INTO TIME (TIME_NAME, START_TIME, END_TIME)
 VALUES
@@ -146,7 +165,5 @@ VALUES
 
 INSERT INTO LIGHTS_ON_TIME(FLASHLIGHT_ID, TIME_NAME)
 VALUES
-	(2, 'twilight'),
-	(3, 'twilight'),
-	(5, 'night'),
-	(6, 'night');
+	(1, 'twilight'),
+	(2, 'night');
